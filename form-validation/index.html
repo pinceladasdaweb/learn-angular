@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn AngularJS - Directives</title>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+    <style type="text/css">
+        form {
+            margin-bottom: 20px
+        }
+        .centerfy {
+            text-align: center;
+        }
+        .selected {
+            background-color: yellow !important
+        }
+        .bold {
+            font-weight: bold
+        }
+    </style>
+</head>
+<body ng-app="telephoneDirectory">
+    <main ng-controller="telephoneDirectoryCtrl">
+        <header class="jumbotron">
+            <div class="container">
+                <h1 class="centerfy">{{app}}</h1>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <table class="table table-striped" ng-show="contacts.length > 0">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Telephone</th>
+                                <th>Provider</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-class="{'selected bold': contact.selected}" ng-repeat="contact in contacts">
+                                <td><input type="checkbox" ng-model="contact.selected"></td>
+                                <td>{{contact.name}}</td>
+                                <td>{{contact.tel}}</td>
+                                <td>{{contact.provider.name}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <hr>
+                    <form name="contactForm">
+                        <div ng-if="contactForm.name.$dirty && contactForm.name.$touched" ng-messages="contactForm.name.$error">
+                            <div class="alert alert-danger" ng-message="required">
+                                Please, fill the name field.
+                            </div>
+                            <div class="alert alert-danger" ng-message="minlength">
+                                The name field must be at least 10 characters.
+                            </div>
+                        </div>
+                        <div ng-if="contactForm.tel.$dirty && contactForm.tel.$touched" ng-messages="contactForm.tel.$error">
+                            <div class="alert alert-danger" ng-message="required">
+                                Please, fill the phone field.
+                            </div>
+                            <div class="alert alert-danger" ng-message="pattern">
+                                The phone field must follow the format: DDDDD-DDDD.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input id="name" name="name" class="form-control" type="text" placeholder="Name" required ng-model="contact.name" ng-minlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="tel">Phone:</label>
+                            <input id="tel" name="tel" class="form-control" type="tel" placeholder="Phone" required ng-model="contact.tel" ng-pattern="/^\d{4,5}-\d{4}$/">
+                        </div>
+                        <div class="form-group">
+                            <label for="provider">Provider:</label>
+                            <select id="provider" class="form-control" required ng-model="contact.provider" ng-options="provider.name group by provider.category for provider in providers">
+                                <option value="">Select a service provider</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-default btn-block" ng-click="addContact(contact);" ng-disabled="contactForm.$invalid">Add contact</button>
+                        <button type="submit" class="btn btn-danger btn-block" ng-click="deleteContact(contacts);" ng-disabled="!isContactSelected(contacts);">Delete contact</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0/angular.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-messages/1.5.0/angular-messages.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        var app = angular.module('telephoneDirectory', ["ngMessages"]);
+
+        app.controller("telephoneDirectoryCtrl", ['$scope', function($scope) {
+            $scope.app   = "Telephone Directory";
+
+            $scope.contacts  = [
+                {name: 'Pedro', tel: "9999-8888", provider: {name: "Oi", code: 14, category: "Cell phone"}},
+                {name: "Ana", tel: "9999-8877", provider: {name: "Vivo", code: 15, category: "Cell phone"}},
+                {name: "Maria", tel: "9999-8866", provider: {name: "Tim", code: 41, category: "Cell phone"}}
+            ];
+            $scope.providers = [
+                {name: 'Oi', code: 14, category: 'Cell phone'},
+                {name: 'Vivo', code: 15, category: 'Cell phone'},
+                {name: 'Tim', code: 41, category: 'Cell phone'},
+                {name: 'GVT', code: 25, category: 'Fixed'},
+                {name: 'Embratel', code: 21, category: 'Fixed'}
+            ];
+
+            $scope.addContact = function (contact) {
+                $scope.contacts.push(angular.copy(contact));
+                delete $scope.contact;
+                $scope.contactForm.$setPristine();
+            };
+            $scope.deleteContact = function (contacts) {
+                $scope.contacts = contacts.filter(function (contact) {
+                    if (!contact.selected) return contact;
+                });
+            };
+            $scope.isContactSelected = function (contacts) {
+                return contacts.some(function (contact) {
+                    return contact.selected;
+                });
+            };
+        }]);
+    </script>
+</body>
+</html>
